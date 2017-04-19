@@ -10,7 +10,6 @@
 <pin name="scanclk" direction="input" scope="external" source="clock"  />
 <pin name="c0" direction="output" scope="external" source="clock"  />
 <pin name="c1" direction="output" scope="external" source="clock"  />
-<pin name="c2" direction="output" scope="external" source="clock"  />
 <pin name="locked" direction="output" scope="external"  />
 <pin name="phasedone" direction="output" scope="external"  />
 
