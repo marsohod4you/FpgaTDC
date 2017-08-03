@@ -23,7 +23,7 @@ reg cap = 1'b0;
 
 wire wc0;
 wire wc1;
-wire wc2;
+//wire wc2;
 wire wlocked;
 
 assign IO[5:0] = 0;
@@ -55,6 +55,7 @@ assign echo_impulse = IO[7]; //echo impulse received after delay from input pin
 reg [7:0]wc0_timer;
 reg [7:0]try;
 reg dir;
+/*
 always @( posedge wc0 or negedge wlocked )
 	if( ~wlocked ) begin
 		try <= 0;
@@ -70,6 +71,7 @@ always @( posedge wc0 or negedge wlocked )
 				dir <= ~dir;
 		end
 	end
+*/
 
 //define key0/key1 poll freq
 reg [23:0]cnt;
@@ -134,7 +136,7 @@ begin
 			wc0_timer <= wc0_timer + 1;
 		if( capture0 )
 			echo_fixed <= echo_impulse;
-		if( capture1 )
+		if( capture1 /*& dir*/ )
 			echo_fixed_array[try] <= echo_fixed;
 	end
 end
@@ -149,6 +151,26 @@ always @( negedge wc0 )
 	if( phase_done )
 		phase_step<=1'b0;
 
+always @( negedge wc0 or negedge wlocked )
+	if( ~wlocked )
+		try <= 0;
+	else
+	if( phase_done ) begin
+			if( dir )
+				try <= try-1'b1;
+			else
+				try <= try+1'b1;
+	end
+
+always @( posedge wc0 or negedge wlocked )
+	if( ~wlocked )
+		dir <= 1'b0;
+	else
+		if( wc0_timer==PHASE_CHANGE_TIME-8 ) begin
+			if( (dir==0 && try==MAX_TRIES-1) || (dir==1 && try==1) )
+				dir <= ~dir;
+	end
+
 //PLL
 mypll mypll_ (
 	.areset( 1'b0 ),
@@ -159,7 +181,7 @@ mypll mypll_ (
 	.scanclk( wc0 ),
 	.c0( wc0 ),
 	.c1( wc1 ),
-	.c2( wc2 ),
+	//.c2( wc2 ),
 	.locked( wlocked ),
 	.phasedone( wpdone )
 	);
